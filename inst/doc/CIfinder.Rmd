@@ -1,0 +1,105 @@
+---
+title: "Computing the confidence intervals for predictive values"
+author: "Dadong Zhang, Jingye Wang, Johan Surtihadi"
+output: rmarkdown::html_vignette
+bibliography: REFERENCES.bib
+date: '`r format(Sys.Date())`'
+vignette: >
+  %\VignetteIndexEntry{Eestimating confidence interval for predictive values}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r global, include=FALSE}
+library(CIfinder)
+library(kableExtra)
+```
+
+## Introduction
+The R package CIfinder (dev version 0.0.0.9003), is intended to provide functions to compute confidence intervals for the positive predictive value (PPV) and negative predictive value (NPV) based on varied scenarios. In prospective studies where the proportion of diseased subjects provides an unbiased estimate of the disease prevalence, the confidence intervals for PPV and NPV can be estimated by methods that are applicable to single proportions. In this case, the package provides six methods for cocmputing the confidence intervals: `clopper.pearson`, `wald`, `wislon`, `wislon.correct`, `agresti`, and `beta`. In situations where the proportion of diseased subjects does not correspond to the disease prevalence (e.g. case-control studies), this package provides two types of solutions: I) three methods to estimate confidence intervals for PPV and NPV via ratio of two binomial proportions, including Gart & Nam (1988) <doi:10.2307/2531848>, Walter (1975) <doi:10.1093/biomet/62.2.371>, and MOVER-J (Laud, 2017) <doi:10.1002/pst.1813>; II) three direct methods to compute the confidence intervals, including Pepe (2003) <doi:10.1002/sim.2185>, Zhou (2017) <doi:10.1002/sim.2677>, and Delta <doi:10.1002/sim.2677>. For more information, please see the Details and References sections in the user's manual.
+
+## Installation
+
+You can install the latest version of `CIfinder` by:
+    
+``` {r eval = FALSE}
+install.packages("CIfinder")
+```
+
+## Examples
+To demonstrate the utility of the `CIfinder::ppv_npv_ci()` function for calculating the confidence intervals for PPV and NPV, we will use a case-control study published by van de Vijver et al. (2002) <doi:10.1056/NEJMoa021967>. In the study, Cases were defined as those that have metastasis within 5 years of tumour excision, while controls were those that did not. Each tumor was classified as having a good
+or poor gene signature which was defined as having a signature correlation coefficient above or
+below the ‘optimized sensitivity’ threshold, respectively. This ‘optimized sensitivity’ threshold is
+defined as the correlation value that would result in a misclassification of at most 10 per cent of the
+cases. The performance of their 70-gene signature as prognosticator for metastasis is summarized
+in Table 1 below:  
+
+```{r echo=FALSE}
+bdat <- data.frame(Case = c(31, 3, 34), Control = c(12, 32, 44))
+rownames(bdat) <- c("Poor_Signature", "Good_Signature", "Total")
+kable(bdat, caption = "Table 1. Breast cancer data from a molecular signature classifier") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+### Generate the confidence interval for $PPV$ or $NPV$
+Since this was a case-control study, the proportion of cases (34/(34+44)=43.6%) is not an unbiased estimate of its prevalence (assumed 7%). PPV and NPV and their confidence intervals can't be estimated directly. To calculate the confidence interval based "gart and nam" method:
+```{r gn}
+library(CIfinder)
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "gart and nam")
+```
+
+In this output, phi_ppv denotes $\phi_{PPV}=\frac{1-specificity}{sensitivity}$ in the function to estimate $PPV=\frac{\rho}{\rho+(1-\rho)\phi_{PPV}}$, where $\rho$ is the prevalence. Similarly, phi_npv denotes $\phi_{NPV}=\frac{1-sensitivity}{specificity}$ in the function to estimate $NPV=\frac{1-\rho}{(1-\rho)+\rho\phi_{NPV}}$. ppv and npv provide the results for the estimates, lower confidence limit, upper confidence limit and the maximum likelihood estimate based on score method described in the Gart and Nam paper.
+
+To calculate the confidence interval based "zhou's method"
+```{r zhou1}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "zhou")
+```
+In this output, since continuity correction isn't specified, the estimates and confidence intervals in `ppv` and `npv` are same as the standard delta method where the `ppv_logit_transformed` and `npv_logit_transformed` refer the standard logit method described in the paper. If `continuity.correction` is being specified:
+
+```{r zhou2}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "zhou",
+           continuity.correction = TRUE)
+```
+In this case, a continuity correction value $\frac{z_{\alpha/2}^2}{2}$ is applied. The `ppv` and `npv` outputs refer the "Adjusted" in the paper and `ppv_logit_transformed` and `npv_logit_transformed` denote the "Adjusted logit" method described in the paper.
+
+### Confidence interval for special cases
+Assume we have a special case data where $x_0=n_0$:
+```{r echo=FALSE}
+bdat <- data.frame(Case = c(31, 3, 34), Control = c(0, 44, 44))
+rownames(bdat) <- c("Poor_Signature", "Good_Signature", "Total")
+kable(bdat, caption = "Table 1. Example of a special testing data") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+In this situation, `Pepe`, `Delta`, and `Zhou` (standard logit) methods can not be used without continuity correction. `Walter` method can be used, but there may have skewness concerns. `gart and nam` and `mover-j` could be considered.
+
+```{r gn2}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,
+           method = "gart and nam")
+```
+Comparing to the `Walter` output:
+```{r walter}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,
+           method = "walter")
+```
+Note, for `walter` and `mover-j`, no continuity.correction should be used as 0.5 has been used in their methods as described by the original papers.
+
+Also comparing to the Zhou's adjusted methods:
+```{r zhou3}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,
+           method = "zhou",
+           continuity.correction = TRUE)
+```
+
+## Feedback and Report issues
+We appreciate any feedback, comments and suggestions. If you have any questions or issues to use the package, please reach out to the developers.
