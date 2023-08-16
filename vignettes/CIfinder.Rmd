@@ -23,7 +23,7 @@ library(kableExtra)
 ```
 
 ## Introduction
-The R package CIfinder (dev version 0.0.0.9003), is intended to provide functions to compute confidence intervals for the positive predictive value (PPV) and negative predictive value (NPV) based on varied scenarios. In prospective studies where the proportion of diseased subjects provides an unbiased estimate of the disease prevalence, the confidence intervals for PPV and NPV can be estimated by methods that are applicable to single proportions. In this case, the package provides six methods for cocmputing the confidence intervals: `clopper.pearson`, `wald`, `wislon`, `wislon.correct`, `agresti`, and `beta`. In situations where the proportion of diseased subjects does not correspond to the disease prevalence (e.g. case-control studies), this package provides two types of solutions: I) three methods to estimate confidence intervals for PPV and NPV via ratio of two binomial proportions, including Gart & Nam (1988) <doi:10.2307/2531848>, Walter (1975) <doi:10.1093/biomet/62.2.371>, and MOVER-J (Laud, 2017) <doi:10.1002/pst.1813>; II) three direct methods to compute the confidence intervals, including Pepe (2003) <doi:10.1002/sim.2185>, Zhou (2017) <doi:10.1002/sim.2677>, and Delta <doi:10.1002/sim.2677>. For more information, please see the Details and References sections in the user's manual.
+CIfinder is an R package intended to provide functions to compute confidence intervals for the positive predictive value (PPV) and negative predictive value (NPV) based on varied scenarios. In prospective studies where the proportion of diseased subjects provides an unbiased estimate of the disease prevalence, the confidence intervals for PPV and NPV can be estimated by methods that are applicable to single proportions. In this case, the package provides six methods for cocmputing the confidence intervals: "clopper.pearson", "wald", "wilson", "wilson.correct", "agresti", and "beta". In situations where the proportion of diseased subjects does not correspond to the disease prevalence (e.g. case-control studies), this package provides two types of solutions: I) three methods to estimate confidence intervals for PPV and NPV via ratio of two binomial proportions, including Gart & Nam (1988) <https://doi.org/10.2307/2531848>, Walter (1975) <https://doi.org/10.1093/biomet/62.2.371>, and MOVER-J (Laud, 2017) <https://doi.org/10.1002/pst.1813>; II) three direct methods to compute the confidence intervals, including Pepe (2003) <https://doi.org/10.1002/sim.2185>, Zhou (2007) <doi:10.1002/sim.2677>, and Delta <https://doi.org/10.1002/sim.2677>. For more information, please see the Details and References sections in the user's manual.
 
 ## Installation
 
@@ -33,13 +33,8 @@ You can install the latest version of `CIfinder` by:
 install.packages("CIfinder")
 ```
 
-## Examples
-To demonstrate the utility of the `CIfinder::ppv_npv_ci()` function for calculating the confidence intervals for PPV and NPV, we will use a case-control study published by van de Vijver et al. (2002) <doi:10.1056/NEJMoa021967>. In the study, Cases were defined as those that have metastasis within 5 years of tumour excision, while controls were those that did not. Each tumor was classified as having a good
-or poor gene signature which was defined as having a signature correlation coefficient above or
-below the ‘optimized sensitivity’ threshold, respectively. This ‘optimized sensitivity’ threshold is
-defined as the correlation value that would result in a misclassification of at most 10 per cent of the
-cases. The performance of their 70-gene signature as prognosticator for metastasis is summarized
-in Table 1 below:  
+## Example use
+To demonstrate the utility of the `CIfinder::ppv_npv_ci()` function for calculating the confidence intervals for PPV and NPV, we will use a case-control study published by van de Vijver et al. (2002) <https://doi.org/10.1056/NEJMoa021967>. In the study, Cases were defined as those that have metastasis within 5 years of tumour excision, while controls were those that did not. Each tumor was classified as having a good or poor gene signature which was defined as having a signature correlation coefficient above or below the ‘optimized sensitivity’ threshold, respectively. This ‘optimized sensitivity’ threshold is defined as the correlation value that would result in a misclassification of at most 10 per cent of the cases. The performance of their 70-gene signature as prognosticator for metastasis is summarized in Table 1 below:  
 
 ```{r echo=FALSE}
 bdat <- data.frame(Case = c(31, 3, 34), Control = c(12, 32, 44))
