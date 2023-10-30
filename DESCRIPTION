@@ -1,7 +1,7 @@
 Package: CIfinder
 Type: Package
 Title: Estimate the Confidence Intervals for Predictive Values
-Version: 1.0.1
+Version: 1.0.2
 Author: Dadong Zhang <dzhang4@illumina.com>,
         Jingye Wang <jwang16@illumina.com>,
         Johan Surtihadi <jsurtihadi@illumina.com>
@@ -17,6 +17,6 @@ RdMacros: Rdpack
 Depends: R (>= 3.6.0)
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2023-08-16 13:29:23 UTC; dzhang4
+Packaged: 2023-10-30 18:32:47 UTC; dzhang4
 Repository: CRAN
-Date/Publication: 2023-08-16 14:34:39 UTC
+Date/Publication: 2023-10-30 18:50:02 UTC

@@ -6,10 +6,6 @@ test_that("Error message should be given if bias_correction is set except gart a
   expect_error(ppv_npv_ci(88, 100, 99, 100, prevalence = 0.1, method = "mover-j", bias_correction = TRUE))
 })
 
-test_that("Warning message should be given for mover-j method if continuit correction is set to TRUE", {
-  expect_warning(ppv_npv_ci(88, 100, 99, 100, prevalence = 0.1, method = "mover-j", continuity.correction = TRUE))
-})
-
 test_that("Warning message should be given for walter method if continuit correction is set to TRUE", {
   expect_warning(ppv_npv_ci(88, 100, 99, 100, prevalence = 0.1, method = "walter", continuity.correction = TRUE))
 })

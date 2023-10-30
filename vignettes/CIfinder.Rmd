@@ -87,7 +87,7 @@ Comparing to the `Walter` output:
 ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,
            method = "walter")
 ```
-Note, for `walter` and `mover-j`, no continuity.correction should be used as 0.5 has been used in their methods as described by the original papers.
+Note, for `walter`, no continuity.correction should be used as 0.5 has been used as described by the original paper.
 
 Also comparing to the Zhou's adjusted methods:
 ```{r zhou3}

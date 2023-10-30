@@ -13,7 +13,8 @@ ppv_npv_ci(
   method = "gart and nam",
   conf.level = 0.95,
   bias_correction = FALSE,
-  continuity.correction = FALSE
+  continuity.correction = FALSE,
+  ...
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ ppv_npv_ci(
 \item{bias_correction}{Logical, indicating whether to apply bias correction in the score denominator. default FALSE. This argument can be used only for `gart and nam` method.}
 
 \item{continuity.correction}{logical. default FALSE. 0.5 will be applied if TRUE except the \code{zhou}'s method where \eqn{\frac{z_{\alpha/2}^2}{2}} is used.}
+
+\item{...}{Other arguments passed on to method (e.g., defining the `Beta(ai,bi)` prior distributions in mover-j method for each group (default `ai = bi = 0.5` for Jeffreys method))}
 }
 \value{
 A list object contains the method and the estimates of sensitivity, specificity, PPV, NPV and their confidence intervals.
@@ -64,7 +67,7 @@ This method can be applied to special situations where `x1=n1` or `x0=n0` but no
 small ratios and sample sizes.
 
 \item The \strong{mover-j} method constructs the confidence interval for \eqn{\phi} from separate intervals for the individual group rates (i.e., \eqn{p_1} and \eqn{p_0}).
-By applying the equal-tailed Jeffreys method (0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. Since the beta prior distributions (c(0.5, 0.5)) for each group (Jeffreys method) is applied, no continuity correct should be considered. \cr
+By applying the equal-tailed Jeffreys method (default 0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. \cr
 \cr
 The \strong{pepe}, \strong{zhou}, and \strong{delta} are three direct confidence interval methods for PPV and NPV.
 \cr

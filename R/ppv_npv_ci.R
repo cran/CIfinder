@@ -9,6 +9,7 @@
 #' @param conf.level confidence level. default 0.95.
 #' @param bias_correction Logical, indicating whether to apply bias correction in the score denominator. default FALSE. This argument can be used only for `gart and nam` method.
 #' @param continuity.correction logical. default FALSE. 0.5 will be applied if TRUE except the \code{zhou}'s method where \eqn{\frac{z_{\alpha/2}^2}{2}} is used.
+#' @param ... Other arguments passed on to method (e.g., defining the `Beta(ai,bi)` prior distributions in mover-j method for each group (default `ai = bi = 0.5` for Jeffreys method))
 #' @details
 #' Six methods are supported in current version: "gart and nam", "walter", "mover-j", "pepe", "zhou", and "delta".
 #'
@@ -32,7 +33,7 @@
 #' small ratios and sample sizes.
 #'
 #' \item The \strong{mover-j} method constructs the confidence interval for \eqn{\phi} from separate intervals for the individual group rates (i.e., \eqn{p_1} and \eqn{p_0}).
-#' By applying the equal-tailed Jeffreys method (0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. Since the beta prior distributions (c(0.5, 0.5)) for each group (Jeffreys method) is applied, no continuity correct should be considered. \cr
+#' By applying the equal-tailed Jeffreys method (default 0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. \cr
 #' \cr
 #' The \strong{pepe}, \strong{zhou}, and \strong{delta} are three direct confidence interval methods for PPV and NPV.
 #' \cr
@@ -63,7 +64,7 @@
 #' @export
 #' @examples
 #' ppv_npv_ci(60, 65, 113, 113, prevalence = 0.02)
-ppv_npv_ci <- function (x1, n1, x0, n0, prevalence, method = "gart and nam", conf.level = 0.95, bias_correction = FALSE, continuity.correction = FALSE) {
+ppv_npv_ci <- function (x1, n1, x0, n0, prevalence, method = "gart and nam", conf.level = 0.95, bias_correction = FALSE, continuity.correction = FALSE, ...) {
 
   if(any(c(x1, n1, x0, n0) < 0)) {
     stop("All input numbers must be non-negative")
@@ -106,7 +107,7 @@ ppv_npv_ci <- function (x1, n1, x0, n0, prevalence, method = "gart and nam", con
   }
 
   if (method == "mover-j") {
-    out <- get_moverj_ci(x10 = x10, x11 = x11, x01 = x01, x00 = x00, n1 = n1, n0 = n0, prev =prev, conf.level = conf.level, continuity.correction = continuity.correction)
+    out <- get_moverj_ci(x10 = x10, x11 = x11, x01 = x01, x00 = x00, n1 = n1, n0 = n0, prev =prev, conf.level = conf.level, continuity.correction = continuity.correction, ...)
   }
 
   if (method == "zhou") {
@@ -241,10 +242,7 @@ get_pepe_ci <- function(x11, x10, x01, x00, n1, n0, prev, conf.level, continuity
                     npv_u = npv_ci[1])))
 }
 
-get_moverj_ci <- function(x10, x11, x01, x00, n1, n0, prev, conf.level, continuity.correction) {
-  if (continuity.correction) {
-    warning("Beta priors with ai=bi=0.5 for each group has been used. Continuity correction can be used but not necessary")
-  }
+get_moverj_ci <- function(x10, x11, x01, x00, n1, n0, prev, conf.level, continuity.correction, ...) {
   # sen, spe, phi, etc
   sen <- x11/n1
   spe <- x00/n0
@@ -253,13 +251,13 @@ get_moverj_ci <- function(x10, x11, x01, x00, n1, n0, prev, conf.level, continui
   ppv_est <- prev/(prev + (1 - prev) * phi_ppv)
   npv_est <- (1 - prev)/(1 - prev + prev * phi_npv)
 
-  phi_ppv_ests <- moverci(x10, n0, x11, n1, level = conf.level, contrast = "RR", distrib = "bin", type = "jeff", cc = continuity.correction)
+  phi_ppv_ests <- moverci(x10, n0, x11, n1, level = conf.level, contrast = "RR", distrib = "bin", type = "jeff", cc = continuity.correction, ...)
   phi_ppv_l <- phi_ppv_ests[1]
   phi_ppv_u <- phi_ppv_ests[3]
   ppv_u <- prev/(prev + (1 - prev) * phi_ppv_l)
   ppv_l <- prev/(prev + (1 - prev) * phi_ppv_u)
 
-  phi_npv_ests <- moverci(x01, n1, x00, n0, level = conf.level, contrast = "RR", distrib = "bin", type = "jeff", cc = continuity.correction)
+  phi_npv_ests <- moverci(x01, n1, x00, n0, level = conf.level, contrast = "RR", distrib = "bin", type = "jeff", cc = continuity.correction, ...)
   phi_npv_l <- phi_npv_ests[1]
   phi_npv_u <- phi_npv_ests[3]
   npv_l <- (1 - prev)/(1 - prev + prev * phi_npv_u)
@@ -404,12 +402,12 @@ get_walter_ci <- function(x10, x11, x01, x00, n1, n0, prev, conf.level) {
                           fit_phi_ppv[2],
                           fit_phi_ppv[3]),
               ppv=c(ppv_est = ppv_est,
-                    ppv_l = ppv_l,
-                    ppv_u = ppv_u),
+                    ppv_l = unname(ppv_l),
+                    ppv_u = unname(ppv_u)),
               phi_npv = c(fit_phi_npv[1],
                           fit_phi_npv[2],
                           fit_phi_npv[3]),
               npv=c(npv_est = npv_est,
-                    npv_l = npv_l,
-                    npv_u = npv_u)))
+                    npv_l = unname(npv_l),
+                    npv_u = unname(npv_u))))
 }

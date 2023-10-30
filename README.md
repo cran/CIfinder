@@ -46,7 +46,7 @@ threshold, respectively. This ‘optimized sensitivity’ threshold is
 defined as the correlation value that would result in a
 misclassification of at most 10 per cent of the cases. The performance
 of their 70-gene signature as prognosticator for metastasis is
-summarized in Table 1 below:
+summarized as below:
 
     #>                Case Control
     #> Poor_Signature   31      12
@@ -227,21 +227,20 @@ ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,
 #> 0.0000000000 0.0007803411 0.1940673904 
 #> 
 #> $ppv
-#>     ppv_est ppv_l.upper ppv_u.lower 
-#>   1.0000000   0.2794604   0.9897390 
+#>   ppv_est     ppv_l     ppv_u 
+#> 1.0000000 0.2794604 0.9897390 
 #> 
 #> $phi_npv
 #>        phi      lower      upper 
 #> 0.08823529 0.03758016 0.27386671 
 #> 
 #> $npv
-#>     npv_est npv_l.upper npv_u.lower 
-#>   0.9934025   0.9798027   0.9971794
+#>   npv_est     npv_l     npv_u 
+#> 0.9934025 0.9798027 0.9971794
 ```
 
-Note, for `walter` and `mover-j`, no continuity.correction should be
-used as 0.5 has been used in their methods as described by the original
-papers.
+Note, for `walter`, no continuity.correction should be used as 0.5 has
+been used as described by the original paper.
 
 Also comparing to the Zhou’s adjusted methods:
 
