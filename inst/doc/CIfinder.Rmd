@@ -1,6 +1,6 @@
 ---
 title: "Computing the confidence intervals for predictive values"
-author: "Dadong Zhang, Jingye Wang, Johan Surtihadi"
+author: "Dadong Zhang, Jingye Wang, Suqin Cai, and Johan Surtihadi"
 output: rmarkdown::html_vignette
 bibliography: REFERENCES.bib
 date: '`r format(Sys.Date())`'
@@ -23,7 +23,7 @@ library(kableExtra)
 ```
 
 ## Introduction
-CIfinder is an R package intended to provide functions to compute confidence intervals for the positive predictive value (PPV) and negative predictive value (NPV) based on varied scenarios. In prospective studies where the proportion of diseased subjects provides an unbiased estimate of the disease prevalence, the confidence intervals for PPV and NPV can be estimated by methods that are applicable to single proportions. In this case, the package provides six methods for cocmputing the confidence intervals: "clopper.pearson", "wald", "wilson", "wilson.correct", "agresti", and "beta". In situations where the proportion of diseased subjects does not correspond to the disease prevalence (e.g. case-control studies), this package provides two types of solutions: I) three methods to estimate confidence intervals for PPV and NPV via ratio of two binomial proportions, including Gart & Nam (1988) <https://doi.org/10.2307/2531848>, Walter (1975) <https://doi.org/10.1093/biomet/62.2.371>, and MOVER-J (Laud, 2017) <https://doi.org/10.1002/pst.1813>; II) three direct methods to compute the confidence intervals, including Pepe (2003) <https://doi.org/10.1002/sim.2185>, Zhou (2007) <doi:10.1002/sim.2677>, and Delta <https://doi.org/10.1002/sim.2677>. For more information, please see the Details and References sections in the user's manual.
+CIfinder is an R package intended to provide functions to compute confidence intervals for the positive predictive value (PPV) and negative predictive value (NPV) based on varied scenarios. In situations where the proportion of diseased subjects does not correspond to the disease prevalence (e.g. case-control studies), this package provides two types of solutions: I) five methods to estimate confidence intervals for PPV and NPV via ratio of two binomial proportions, including Gart & Nam (1988) <https://doi.org/10.2307/2531848>, Walter (1975) <https://doi.org/10.1093/biomet/62.2.371>, MOVER-J (Laud, 2017) <https://doi.org/10.1002/pst.1813>, Fieller (1954) <https://www.jstor.org/stable/2984043>, and Bootstrap (Efron, 1979) <https://doi.org/10.1201/9780429246593>; II) three direct methods to compute the confidence intervals, including Pepe (2003) <https://doi.org/10.1002/sim.2185>, Zhou (2007) <doi:10.1002/sim.2677>, and Delta <https://doi.org/10.1002/sim.2677>. In prospective studies where the proportion of diseased subjects provides an unbiased estimate of the disease prevalence, the confidence intervals for PPV and NPV can be estimated by methods that are applicable to single proportions. In this case, the package provides six methods for cocmputing the confidence intervals: "clopper.pearson", "wald", "wilson", "wilson.correct", "agresti", and "beta".For more information, please see the Details and References sections in the user's manual.
 
 ## Installation
 
@@ -67,6 +67,17 @@ ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
 ```
 In this case, a continuity correction value $\frac{z_{\alpha/2}^2}{2}$ is applied. The `ppv` and `npv` outputs refer the "Adjusted" in the paper and `ppv_logit_transformed` and `npv_logit_transformed` denote the "Adjusted logit" method described in the paper.
 
+Also comparing to the Bootstrap methods:
+```{r boot}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "boot")
+```
+And Fieller method
+```{r fieller}
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "fieller")
+```
+
 ### Confidence interval for special cases
 Assume we have a special case data where $x_0=n_0$:
 ```{r echo=FALSE}
@@ -76,7 +87,7 @@ kable(bdat, caption = "Table 1. Example of a special testing data") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-In this situation, `Pepe`, `Delta`, and `Zhou` (standard logit) methods can not be used without continuity correction. `Walter` method can be used, but there may have skewness concerns. `gart and nam` and `mover-j` could be considered.
+In this situation, `Pepe`, `Delta`,`Zhou` (standard logit), and `boot` methods can not be used without continuity correction. `Walter` method can be used, but there may have skewness concerns. `gart and nam` and `mover-j` could be considered.
 
 ```{r gn2}
 ppv_npv_ci(x1 = 31, n1 = 34, x0 = 44, n0 = 44, prevalence = 0.07,

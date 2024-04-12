@@ -14,6 +14,8 @@ ppv_npv_ci(
   conf.level = 0.95,
   bias_correction = FALSE,
   continuity.correction = FALSE,
+  n_bootstraps = 1000,
+  boot.type = "bca",
   ...
 )
 }
@@ -24,17 +26,21 @@ ppv_npv_ci(
 
 \item{x0}{number of negatives for both reference(true) marker and testing marker.}
 
-\item{n0}{number of positives for reference (true) marker.}
+\item{n0}{number of negatives for reference (true) marker.}
 
 \item{prevalence}{disease prevalence.}
 
-\item{method}{current support "gart and nam", "walter", "mover-j", "pepe", "zhou", or "delta"; Default is "gart and nam"; Check the \code{Details} for additional information for each method.}
+\item{method}{current support "gart and nam", "walter", "mover-j", "pepe", "zhou", "delta", "fieller", "bootstrap"; Default is "gart and nam"; Check the \code{Details} for additional information for each method.}
 
 \item{conf.level}{confidence level. default 0.95.}
 
 \item{bias_correction}{Logical, indicating whether to apply bias correction in the score denominator. default FALSE. This argument can be used only for `gart and nam` method.}
 
 \item{continuity.correction}{logical. default FALSE. 0.5 will be applied if TRUE except the \code{zhou}'s method where \eqn{\frac{z_{\alpha/2}^2}{2}} is used.}
+
+\item{n_bootstraps}{number of bootstraps for bootstrap method, default 1000}
+
+\item{boot.type}{A character string representing the type of intervals for bootstrap. The value should be any of the values c("bca", "norm", "perc"), default bca.}
 
 \item{...}{Other arguments passed on to method (e.g., defining the `Beta(ai,bi)` prior distributions in mover-j method for each group (default `ai = bi = 0.5` for Jeffreys method))}
 }
@@ -45,9 +51,9 @@ A list object contains the method and the estimates of sensitivity, specificity,
 Estimate the confidence intervals for positive predictive value (PPV) and negative predictive value (NPV) based on different methods
 }
 \details{
-Six methods are supported in current version: "gart and nam", "walter", "mover-j", "pepe", "zhou", and "delta".
+Eight methods are supported in current version: "gart and nam", "walter", "mover-j", "pepe", "zhou", "delta", "fieller", and "bootstrap".
 
-Among those, \strong{gart and nam}, \strong{walter}, and \strong{mover-j} construct the confidence intervals for PPV and NPV by converting the confidence intervals for the ratio of two binomial proportions (\eqn{\phi=\frac{p_1}{p_0}}) where
+Among those, \strong{gart and nam}, \strong{mover-j}, \strong{walter}, and \strong{fieller} construct the confidence intervals for PPV and NPV by converting the confidence intervals for the ratio of two binomial proportions (\eqn{\phi=\frac{p_1}{p_0}}) where
 \eqn{\phi_{PPV}=\frac{(1-specificity)}{sensitivity}} and \eqn{\phi_{NPV}=\frac{(1-sensitivity)}{specificity}}.
 The sensitivity is estimated by \eqn{sensitivity=\frac{x_1}{n_1}} and the specificity by \eqn{specificity=\frac{x_0}{n_0}}. The confidence intervals for \eqn{\phi_{PPV}} and \eqn{\phi_{NPV}}
 are converted to the corresponding confidence intervals for PPV and NPV using the following equations:
@@ -63,11 +69,13 @@ where \eqn{\rho} denotes the \code{prevalence}.
 \item The \strong{gart and nam} method constructs the confidence interval for \eqn{\phi} based on score method with skewness correction. See the details in the paper listed in the \code{Reference} section.
 This method can be applied to special situations where `x1=n1` or `x0=n0` but not for `x1=0` and/or `x0=0`. `continuity.correction` can be considered where `x1=0` and/or `x0=0`.
 
+\item The \strong{mover-j} method constructs the confidence interval for \eqn{\phi} from separate intervals for the individual group rates (i.e., \eqn{p_1} and \eqn{p_0}).
+By applying the equal-tailed Jeffreys method (default 0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. \cr
+
 \item The \strong{walter} method constructs the confidence interval for \eqn{\phi} based on \eqn{log(\phi)}. 0.5 is added to `x1`, `x0`, `n1`, and `n0`. Thus, no continuity correct should be applied additionally. This method has shown skewness concerns for
 small ratios and sample sizes.
 
-\item The \strong{mover-j} method constructs the confidence interval for \eqn{\phi} from separate intervals for the individual group rates (i.e., \eqn{p_1} and \eqn{p_0}).
-By applying the equal-tailed Jeffreys method (default 0.5 to each group), it may achieve a skewness-corrected interval for \eqn{\phi}. \cr
+\item The \strong{fieller} method constructs the confidence interval for \eqn{\phi} by solving the roots of a quadratic equation, see the reference for details. \cr
 \cr
 The \strong{pepe}, \strong{zhou}, and \strong{delta} are three direct confidence interval methods for PPV and NPV.
 \cr
@@ -79,6 +87,8 @@ for PPV and NPV based on standard delta method and based on logit transformed me
 as described in the paper.
 
 \item The \strong{delta} method constructs the confidence intervals based on the Wald-type formulation. The estimates and variances of PPV and NPV are calculated based equations described in the Zhou's paper listed in the \code{Reference} section.
+
+\item The \strong{boot} method constructs the confidence intervals based on bootstrap method.
 }
 }
 \examples{
@@ -93,5 +103,7 @@ ppv_npv_ci(60, 65, 113, 113, prevalence = 0.02)
 \item \insertRef{laud_2017}{CIfinder}
 
 \item \insertRef{pepe_2003}{CIfinder}
+
+\item \insertRef{fieller_1954}{CIfinder}
 }
 }

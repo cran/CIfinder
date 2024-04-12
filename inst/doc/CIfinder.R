@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -30,6 +30,14 @@ ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
 ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
            method = "zhou",
            continuity.correction = TRUE)
+
+## ----boot---------------------------------------------------------------------
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "boot")
+
+## ----fieller------------------------------------------------------------------
+ppv_npv_ci(x1 = 31, n1 = 34, x0 = 32, n0 = 44, prevalence = 0.07,
+           method = "fieller")
 
 ## ----echo=FALSE---------------------------------------------------------------
 bdat <- data.frame(Case = c(31, 3, 34), Control = c(0, 44, 44))

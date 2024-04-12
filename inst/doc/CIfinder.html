@@ -10,9 +10,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<meta name="author" content="Dadong Zhang, Jingye Wang, Johan Surtihadi" />
+<meta name="author" content="Dadong Zhang, Jingye Wang, Suqin Cai, and Johan Surtihadi" />
 
-<meta name="date" content="2023-10-30" />
+<meta name="date" content="2024-04-12" />
 
 <title>Computing the confidence intervals for predictive values</title>
 
@@ -345,13 +345,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -557,8 +564,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Computing the confidence intervals for
 predictive values</h1>
-<h4 class="author">Dadong Zhang, Jingye Wang, Johan Surtihadi</h4>
-<h4 class="date">2023-10-30</h4>
+<h4 class="author">Dadong Zhang, Jingye Wang, Suqin Cai, and Johan
+Surtihadi</h4>
+<h4 class="date">2024-04-12</h4>
 
 
 
@@ -566,22 +574,23 @@ predictive values</h1>
 <h2>Introduction</h2>
 <p>CIfinder is an R package intended to provide functions to compute
 confidence intervals for the positive predictive value (PPV) and
-negative predictive value (NPV) based on varied scenarios. In
-prospective studies where the proportion of diseased subjects provides
-an unbiased estimate of the disease prevalence, the confidence intervals
-for PPV and NPV can be estimated by methods that are applicable to
-single proportions. In this case, the package provides six methods for
-cocmputing the confidence intervals: “clopper.pearson”, “wald”,
-“wilson”, “wilson.correct”, “agresti”, and “beta”. In situations where
-the proportion of diseased subjects does not correspond to the disease
-prevalence (e.g. case-control studies), this package provides two types
-of solutions: I) three methods to estimate confidence intervals for PPV
-and NPV via ratio of two binomial proportions, including Gart &amp; Nam
-(1988) <a href="https://doi.org/10.2307/2531848" class="uri">https://doi.org/10.2307/2531848</a>, Walter (1975) <a href="https://doi.org/10.1093/biomet/62.2.371" class="uri">https://doi.org/10.1093/biomet/62.2.371</a>, and MOVER-J
-(Laud, 2017) <a href="https://doi.org/10.1002/pst.1813" class="uri">https://doi.org/10.1002/pst.1813</a>; II) three direct
+negative predictive value (NPV) based on varied scenarios. In situations
+where the proportion of diseased subjects does not correspond to the
+disease prevalence (e.g. case-control studies), this package provides
+two types of solutions: I) five methods to estimate confidence intervals
+for PPV and NPV via ratio of two binomial proportions, including Gart
+&amp; Nam (1988) <a href="https://doi.org/10.2307/2531848" class="uri">https://doi.org/10.2307/2531848</a>, Walter (1975) <a href="https://doi.org/10.1093/biomet/62.2.371" class="uri">https://doi.org/10.1093/biomet/62.2.371</a>, MOVER-J (Laud,
+2017) <a href="https://doi.org/10.1002/pst.1813" class="uri">https://doi.org/10.1002/pst.1813</a>, Fieller (1954) <a href="https://www.jstor.org/stable/2984043" class="uri">https://www.jstor.org/stable/2984043</a>, and Bootstrap
+(Efron, 1979) <a href="https://doi.org/10.1201/9780429246593" class="uri">https://doi.org/10.1201/9780429246593</a>; II) three direct
 methods to compute the confidence intervals, including Pepe (2003) <a href="https://doi.org/10.1002/sim.2185" class="uri">https://doi.org/10.1002/sim.2185</a>, Zhou (2007) <a href="doi:10.1002/sim.2677" class="uri">doi:10.1002/sim.2677</a>, and
-Delta <a href="https://doi.org/10.1002/sim.2677" class="uri">https://doi.org/10.1002/sim.2677</a>. For more information,
-please see the Details and References sections in the user’s manual.</p>
+Delta <a href="https://doi.org/10.1002/sim.2677" class="uri">https://doi.org/10.1002/sim.2677</a>. In prospective studies
+where the proportion of diseased subjects provides an unbiased estimate
+of the disease prevalence, the confidence intervals for PPV and NPV can
+be estimated by methods that are applicable to single proportions. In
+this case, the package provides six methods for cocmputing the
+confidence intervals: “clopper.pearson”, “wald”, “wilson”,
+“wilson.correct”, “agresti”, and “beta”.For more information, please see
+the Details and References sections in the user’s manual.</p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -763,6 +772,60 @@ specified:</p>
 the paper and <code>ppv_logit_transformed</code> and
 <code>npv_logit_transformed</code> denote the “Adjusted logit” method
 described in the paper.</p>
+<p>Also comparing to the Bootstrap methods:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">32</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;boot&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;boot&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [1] 0.7272727</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; phi_ppv_est   phi_ppv_l   phi_ppv_u </span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;   0.2991202   0.1680917   0.4713499 </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; 0.2010444 0.1376989 0.3092894 </span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; phi_npv_est   phi_npv_l   phi_npv_u </span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;  0.12132353  0.03216665  0.31249927 </span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; 0.9909508 0.9770191 0.9975847</span></span></code></pre></div>
+<p>And Fieller method</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">32</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;fieller&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;fieller&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; [1] 0.7272727</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; phi_ppv_est   phi_ppv_l   phi_ppv_u </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;   0.2991202   0.1538974   0.4509565 </span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; 0.2010444 0.1430353 0.3284463 </span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; phi_npv_est   phi_npv_l   phi_npv_u </span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;   0.1213235   0.0000000   0.2606399 </span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; 0.9909508 0.9807594 1.0000000</span></span></code></pre></div>
 </div>
 <div id="confidence-interval-for-special-cases" class="section level3">
 <h3>Confidence interval for special cases</h3>
@@ -819,94 +882,95 @@ Total
 </tr>
 </tbody>
 </table>
-<p>In this situation, <code>Pepe</code>, <code>Delta</code>, and
-<code>Zhou</code> (standard logit) methods can not be used without
-continuity correction. <code>Walter</code> method can be used, but there
-may have skewness concerns. <code>gart and nam</code> and
-<code>mover-j</code> could be considered.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;gart and nam&quot;</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gart and nam&quot;</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; phi_ppv_est   phi_ppv_l   phi_ppv_u phi_ppv_mle </span></span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;    0.000000    0.000000    0.067785    0.004121 </span></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u   ppv_mle </span></span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; 1.0000000 0.5261573 1.0000000 0.9480916 </span></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; phi_npv_est   phi_npv_l   phi_npv_u phi_npv_mle </span></span>
-<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;  0.08823529  0.02376800  0.21956500  0.09223300 </span></span>
-<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
-<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u   npv_mle </span></span>
-<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; 0.9934025 0.9837423 0.9982142 0.9931056</span></span></code></pre></div>
+<p>In this situation, <code>Pepe</code>,
+<code>Delta</code>,<code>Zhou</code> (standard logit), and
+<code>boot</code> methods can not be used without continuity correction.
+<code>Walter</code> method can be used, but there may have skewness
+concerns. <code>gart and nam</code> and <code>mover-j</code> could be
+considered.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;gart and nam&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gart and nam&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; phi_ppv_est   phi_ppv_l   phi_ppv_u phi_ppv_mle </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;    0.000000    0.000000    0.067785    0.004121 </span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u   ppv_mle </span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; 1.0000000 0.5261573 1.0000000 0.9480916 </span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; phi_npv_est   phi_npv_l   phi_npv_u phi_npv_mle </span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;  0.08823529  0.02376800  0.21956500  0.09223300 </span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u   npv_mle </span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; 0.9934025 0.9837423 0.9982142 0.9931056</span></span></code></pre></div>
 <p>Comparing to the <code>Walter</code> output:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;walter&quot;</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;walter&quot;</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt;          phi        lower        upper </span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; 0.0000000000 0.0007803411 0.1940673904 </span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; 1.0000000 0.2794604 0.9897390 </span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt;        phi      lower      upper </span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; 0.08823529 0.03758016 0.27386671 </span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; 0.9934025 0.9798027 0.9971794</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;walter&quot;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;walter&quot;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.9117647</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; $phi_ppv</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt;          phi        lower        upper </span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; 0.0000000000 0.0007803411 0.1940673904 </span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; 1.0000000 0.2794604 0.9897390 </span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; $phi_npv</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt;        phi      lower      upper </span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; 0.08823529 0.03758016 0.27386671 </span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; 0.9934025 0.9798027 0.9971794</span></span></code></pre></div>
 <p>Note, for <code>walter</code>, no continuity.correction should be
 used as 0.5 has been used as described by the original paper.</p>
 <p>Also comparing to the Zhou’s adjusted methods:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;zhou&quot;</span>,</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>           <span class="at">continuity.correction =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;zhou&quot;</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; [1] 0.8699646</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; [1] 0.9598522</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; 0.6199169 0.2921698 0.9476640 </span></span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
-<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; 0.9899059 0.9816510 0.9981609 </span></span>
-<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; $ppv_logit_transformed</span></span>
-<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
-<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; 0.6199169 0.2886800 0.8676335 </span></span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; $npv_logit_transformed</span></span>
-<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
-<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; 0.9899059 0.9772354 0.9955563</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">ppv_npv_ci</span>(<span class="at">x1 =</span> <span class="dv">31</span>, <span class="at">n1 =</span> <span class="dv">34</span>, <span class="at">x0 =</span> <span class="dv">44</span>, <span class="at">n0 =</span> <span class="dv">44</span>, <span class="at">prevalence =</span> <span class="fl">0.07</span>,</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>           <span class="at">method =</span> <span class="st">&quot;zhou&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>           <span class="at">continuity.correction =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; $method</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;zhou&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; $sensitivity</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; [1] 0.8699646</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; $specificity</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; [1] 0.9598522</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; $ppv</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; 0.6199169 0.2921698 0.9476640 </span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; $npv</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; 0.9899059 0.9816510 0.9981609 </span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; $ppv_logit_transformed</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;   ppv_est     ppv_l     ppv_u </span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; 0.6199169 0.2886800 0.8676335 </span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt; $npv_logit_transformed</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;   npv_est     npv_l     npv_u </span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; 0.9899059 0.9772354 0.9955563</span></span></code></pre></div>
 </div>
 </div>
 <div id="feedback-and-report-issues" class="section level2">
